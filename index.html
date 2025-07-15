@@ -126,23 +126,79 @@
   </div>
 
   <script>
-    const exercises = [ /* same exercise array as before */ 
-      { name: "Warm-up: Standing Squats", cues: "Feet hip-width apart..." },
-      { name: "Plank on Platform (knees down option)", cues: "Hands on platform..." },
-      { name: "Standing Lunges - Right Leg", cues: "Step back, 90-degree angles..." },
-      { name: "Standing Lunges - Left Leg", cues: "Step back, 90-degree angles..." },
-      { name: "Seated Row (cables)", cues: "Sit tall, pull elbows back..." },
-      { name: "Incline Push-ups on Platform", cues: "Hands on platform..." },
-      { name: "Standing Obliques (cables)", cues: "Hold cable, side bend away..." },
-      { name: "Glute Bridges on Platform", cues: "Shoulders on platform..." },
-      { name: "Single-leg Glute Bridge - Right", cues: "One foot flat..." },
-      { name: "Single-leg Glute Bridge - Left", cues: "One foot flat..." },
-      { name: "Seated Lat Pulldowns (cables)", cues: "Sit tall, pull cables down..." },
-      { name: "Tricep Press (cables)", cues: "Elbows at sides, press down..." },
-      { name: "Calf Raises on Platform", cues: "Balls of feet on platform..." },
-      { name: "Standing Bicep Curls (cables)", cues: "Arms at sides, curl up..." },
-      { name: "Wall Sit Hold", cues: "Back against wall..." },
-      { name: "Cool-down: Gentle Stretches", cues: "Hold each stretch..." }
+        // Pregnancy-safe Lagree workout sequence (30 minutes)
+        const exercises = [
+            {
+                name: "Warm-up: Standing Squats",
+                cues: "Feet hip-width apart, weight in heels, slow controlled movement. Focus on engaging glutes."
+            },
+            {
+                name: "Plank on Platform (knees down option)",
+                cues: "Hands on platform, straight line from head to knees/toes. Engage core, breathe steadily."
+            },
+            {
+                name: "Standing Lunges - Right Leg",
+                cues: "Step back, 90-degree angles, front knee over ankle. Keep torso upright, engage core."
+            },
+            {
+                name: "Standing Lunges - Left Leg",
+                cues: "Step back, 90-degree angles, front knee over ankle. Keep torso upright, engage core."
+            },
+            {
+                name: "Seated Row (cables)",
+                cues: "Sit tall, pull elbows back, squeeze shoulder blades. Slow and controlled movement."
+            },
+            {
+                name: "Incline Push-ups on Platform",
+                cues: "Hands on platform, body in straight line. Lower chest to platform, push through palms."
+            },
+            {
+                name: "Standing Obliques (cables)",
+                cues: "Hold cable, side bend away from machine. Keep hips facing forward, engage side body."
+            },
+            {
+                name: "Glute Bridges on Platform",
+                cues: "Shoulders on platform, feet flat. Squeeze glutes to lift hips, hold at top."
+            },
+            {
+                name: "Single-leg Glute Bridge - Right",
+                cues: "One foot flat, other leg extended. Squeeze glute to lift, keep hips level."
+            },
+            {
+                name: "Single-leg Glute Bridge - Left",
+                cues: "One foot flat, other leg extended. Squeeze glute to lift, keep hips level."
+            },
+            {
+                name: "Seated Lat Pulldowns (cables)",
+                cues: "Sit tall, pull cables down and back. Feel your lats engage, control the return."
+            },
+            {
+                name: "Tricep Press (cables)",
+                cues: "Elbows at sides, press down and back. Keep upper arms still, squeeze triceps."
+            },
+            {
+                name: "Calf Raises on Platform",
+                cues: "Balls of feet on platform, heels hanging. Rise up on toes, slow lower."
+            },
+            {
+                name: "Standing Bicep Curls (cables)",
+                cues: "Arms at sides, curl up with control. Keep elbows still, squeeze biceps at top."
+            },
+            {
+                name: "Wall Sit Hold",
+                cues: "Back against wall, thighs parallel to floor. Keep core engaged, breathe steadily."
+            },
+            {
+                name: "Cool-down: Gentle Stretches",
+                cues: "Hold each stretch 15-30 seconds. Focus on deep breathing and relaxation."
+            }
+        ];
+        
+        let currentExerciseIndex = 0;
+        let seconds = 0;
+        let isRunning = false;
+        let timerInterval;
+        let warningShown = false;
     ];
 
     let currentExerciseIndex = 0;
