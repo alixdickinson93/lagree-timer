@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lagree Workout Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .timer-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .current-exercise {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .form-cues {
+      font-size: 16px;
+      color: #555;
+      margin: 15px 0;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      border-left: 4px solid #3498db;
+      text-align: left;
+      line-height: 1.4;
+    }
+
+    .timer-display {
+      font-size: 48px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .next-exercise {
+      font-size: 18px;
+      color: #666;
+      margin: 20px 0;
+    }
+
+    .warning {
+      background-color: #ff6b6b;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 20px 0;
+      display: none;
+    }
+
+    .controls {
+      margin-top: 30px;
+    }
+
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .start-btn { background-color: #27ae60; color: white; }
+    .start-btn:hover { background-color: #219a52; }
+    .pause-btn { background-color: #f39c12; color: white; }
+    .pause-btn:hover { background-color: #d68910; }
+    .next-btn { background-color: #3498db; color: white; }
+    .next-btn:hover { background-color: #2980b9; }
+    .reset-btn { background-color: #e74c3c; color: white; }
+    .reset-btn:hover { background-color: #c0392b; }
+
+    .progress {
+      margin-top: 20px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="timer-container">
+    <div class="current-exercise" id="currentExercise">Ready to Start</div>
+    <div class="form-cues" id="formCues">Get ready for your pregnancy-safe Lagree workout!</div>
+    <div class="timer-display" id="timerDisplay">0:00</div>
+    <div class="next-exercise" id="nextExercise">First exercise: Warm-up: Standing Squats</div>
+
+    <div class="warning" id="warningDisplay">Get ready for next exercise!</div>
+
+    <div style="margin-top: 20px;">
+      <label style="font-size: 16px;">
+        <input type="checkbox" id="autoAdvanceCheckbox" checked>
+        Auto-advance to next exercise
+      </label>
+    </div>
+
+    <div class="controls">
+      <button class="start-btn" id="startBtn" onclick="startTimer()">Start</button>
+      <button class="pause-btn" id="pauseBtn" onclick="pauseTimer()" style="display:none;">Pause</button>
+      <button class="next-btn" onclick="nextExercise()">Next Exercise</button>
+      <button class="reset-btn" onclick="resetTimer()">Reset</button>
+    </div>
+
+    <div class="progress" id="progress">Exercise 0 of 16 • ~30 min workout</div>
+  </div>
+
+  <script>
+    const exercises = [ /* same exercise array as before */ 
+      { name: "Warm-up: Standing Squats", cues: "Feet hip-width apart..." },
+      { name: "Plank on Platform (knees down option)", cues: "Hands on platform..." },
+      { name: "Standing Lunges - Right Leg", cues: "Step back, 90-degree angles..." },
+      { name: "Standing Lunges - Left Leg", cues: "Step back, 90-degree angles..." },
+      { name: "Seated Row (cables)", cues: "Sit tall, pull elbows back..." },
+      { name: "Incline Push-ups on Platform", cues: "Hands on platform..." },
+      { name: "Standing Obliques (cables)", cues: "Hold cable, side bend away..." },
+      { name: "Glute Bridges on Platform", cues: "Shoulders on platform..." },
+      { name: "Single-leg Glute Bridge - Right", cues: "One foot flat..." },
+      { name: "Single-leg Glute Bridge - Left", cues: "One foot flat..." },
+      { name: "Seated Lat Pulldowns (cables)", cues: "Sit tall, pull cables down..." },
+      { name: "Tricep Press (cables)", cues: "Elbows at sides, press down..." },
+      { name: "Calf Raises on Platform", cues: "Balls of feet on platform..." },
+      { name: "Standing Bicep Curls (cables)", cues: "Arms at sides, curl up..." },
+      { name: "Wall Sit Hold", cues: "Back against wall..." },
+      { name: "Cool-down: Gentle Stretches", cues: "Hold each stretch..." }
+    ];
+
+    let currentExerciseIndex = 0;
+    let seconds = 0;
+    let isRunning = false;
+    let timerInterval;
+    let warningShown = false;
+
+    function playBeep() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    function updateDisplay() {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      document.getElementById('timerDisplay').textContent = 
+        `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function updateExerciseDisplay() {
+      if (currentExerciseIndex < exercises.length) {
+        document.getElementById('currentExercise').textContent = exercises[currentExerciseIndex].name;
+        document.getElementById('formCues').textContent = exercises[currentExerciseIndex].cues;
+
+        if (currentExerciseIndex + 1 < exercises.length) {
+          document.getElementById('nextExercise').textContent = 
+            `Next: ${exercises[currentExerciseIndex + 1].name}`;
+        } else {
+          document.getElementById('nextExercise').textContent = "Last exercise!";
+        }
+      } else {
+        document.getElementById('currentExercise').textContent = "Workout Complete!";
+        document.getElementById('formCues').textContent = "Great job! You've completed your pregnancy-safe Lagree workout. Take time to stretch and hydrate.";
+        document.getElementById('nextExercise').textContent = "Great job! 🎉";
+      }
+
+      document.getElementById('progress').textContent = 
+        `Exercise ${currentExerciseIndex + 1} of ${exercises.length} • ~30 min workout`;
+    }
+
+    function startTimer() {
+      if (currentExerciseIndex >= exercises.length) {
+        resetWorkout();
+        return;
+      }
+
+      isRunning = true;
+      warningShown = false;
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('pauseBtn').style.display = 'inline-block';
+      document.getElementById('warningDisplay').style.display = 'none';
+
+      timerInterval = setInterval(() => {
+        seconds++;
+        updateDisplay();
+
+        const duration = 60;
+        const autoAdvance = document.getElementById('autoAdvanceCheckbox').checked;
+
+        if (seconds === 45 && !warningShown) {
+          document.getElementById('warningDisplay').style.display = 'block';
+          document.getElementById('warningDisplay').textContent = 
+            `Time for next exercise: ${exercises[currentExerciseIndex + 1]?.name || 'Finish!'}`;
+          playBeep();
+          warningShown = true;
+        }
+
+        if (autoAdvance && seconds >= duration) {
+          nextExercise();
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('startBtn').style.display = 'inline-block';
+      document.getElementById('pauseBtn').style.display = 'none';
+    }
+
+    function nextExercise() {
+      const currentTime = seconds;
+      currentExerciseIndex++;
+      seconds = 0;
+      warningShown = false;
+
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        document.getElementById('startBtn').style.display = 'inline-block';
+        document.getElementById('pauseBtn').style.display = 'none';
+      }
+
+      document.getElementById('warningDisplay').style.display = 'none';
+      updateDisplay();
+      updateExerciseDisplay();
+      playBeep();
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      seconds = 0;
+      warningShown = false;
+
+      document.getElementById('startBtn').style.display = 'inline-block';
+      document.getElementById('pauseBtn').style.display = 'none';
+      document.getElementById('warningDisplay').style.display = 'none';
+
+      updateDisplay();
+    }
+
+    function resetWorkout() {
+      resetTimer();
+      currentExerciseIndex = 0;
+      updateExerciseDisplay();
+    }
+
+    // Initialize
+    updateDisplay();
+    updateExerciseDisplay();
+  </script>
+</body>
+</html>
